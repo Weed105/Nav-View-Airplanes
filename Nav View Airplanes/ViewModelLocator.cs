@@ -17,6 +17,7 @@ namespace Nav_View_Airplanes
         {
             ServiceCollection services = new ServiceCollection();
             services.AddTransient<mWindowViewModel>();
+            services.AddTransient<mMainPageViewModel>();
 
             services.AddSingleton<PageService>();
 
@@ -27,6 +28,7 @@ namespace Nav_View_Airplanes
             }
         }
         public mWindowViewModel mWindowViewModel => provider.GetRequiredService<mWindowViewModel>();
+        public mMainPageViewModel mMainPageViewModel => provider.GetRequiredService<mMainPageViewModel>();
 
     }
 }

@@ -4,18 +4,25 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Nav_View_Airplanes.Views"
+      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800" Background="White"
+      DataContext="{Binding mMainPageViewModel, Source={StaticResource ViewModelLocator}}"
+      d:DesignHeight="450" d:DesignWidth="800" Background="Gainsboro"
       Title="MainPage">
 
     <Grid>
         <Viewbox>
             <Canvas Name="Layer_1" Width="680.489" Height="386.6169">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonDown" >
+                        <i:InvokeCommandAction Command="{Binding LeftMouseButtonDown}" 
+                                                PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="0"/>
                 </Canvas.RenderTransform>
                 <Canvas.Resources/>
-                <!--Unknown tag: sodipodi:namedview-->
                 <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="RUMOW"  >
                     <Path.Data>
                         <PathGeometry Figures="M88.5682 176.3l-.4848-.906-.571.7745-.8181.4191-.2483 1.3487-1.8745-.8183-.8806.8539-1.2232-1.3391-.3518 1.4206-1.1567.3492.3288 1.605.9643-.7234.7334.9125 1.5709-.0788.4292-.967.5279.8764 1.109-.59 1.0887.7351 1.7138-.1454.2642-1.1129-.52-1.6725.2108-.6569c-.51.0668-.57-.0925-.8116-.2851Z" FillRule="NonZero"/>
@@ -258,7 +265,8 @@
                 </Path>
                 <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="RUAD"  >
                     <Path.Data>
-                        <PathGeometry Figures="M32.8506 253.68l-.3354-2.0125-1.8112.6708-2.2808-.6708L27.35 250.3259l-.6708-.6708-.5367.6708.2012.6708.3354.6708 1.2075 1.3417 1.0733 1.3417h.4025l.6037-1.3417h.7379l.47 2.0125-.2012 2.0125H29.4293l-1.5429 1.3416.1342 1.3417.2012.6708-.6708.6708h-.8721l.1342-.6708-.2683-.6708h-.5367l-.6708.6708-.2683.6708.805 2.0125 1.3417 1.3417 1.3417-.6708.8721-2.0125h.6037l.5367-.6708.8721-1.3417 1.4758-.6708-.2012 1.3417-.2683 1.3417h1.0733l.3354-.6708.3354-.6708.4025-.6708.805-.6708-.6708-3.3541Z" FillRule="NonZero"/>
+                        <PathGeometry Figures="
+                                      M32.8506 253.68l-.3354-2.0125-1.8112.6708-2.2808-.6708L27.35 250.3259l-.6708-.6708-.5367.6708.2012.6708.3354.6708 1.2075 1.3417 1.0733 1.3417h.4025l.6037-1.3417h.7379l.47 2.0125-.2012 2.0125H29.4293l-1.5429 1.3416.1342 1.3417.2012.6708-.6708.6708h-.8721l.1342-.6708-.2683-.6708h-.5367l-.6708.6708-.2683.6708.805 2.0125 1.3417 1.3417 1.3417-.6708.8721-2.0125h.6037l.5367-.6708.8721-1.3417 1.4758-.6708-.2012 1.3417-.2683 1.3417h1.0733l.3354-.6708.3354-.6708.4025-.6708.805-.6708-.6708-3.3541Z" FillRule="NonZero"/>
                     </Path.Data>
                     <Path.RenderTransform>
                         <TranslateTransform X="-1.0437" Y="-8.2168"/>
@@ -696,10 +704,12 @@
                         <TranslateTransform X="-1.0437" Y="-8.2168"/>
                     </Path.RenderTransform>
                 </Path>
-                <!--Unknown tag: metadata-->
             </Canvas>
-
         </Viewbox>
+        <!--<controls:MapControl x:Name="mapControl"
+                            
+                             TiltInteractionMode="GestureAndControl"
+                             MapServiceToken="p5XG2q9fTXGjqTSKsLT2~1jrq6hYXkD7wMhuUAbhRoQ~AiO7LYnRgr2H41rCyh0S3UVjYTgLxt0fMppiC5GLr3UsBs9px60HRSlnFNaEGEwc" />-->
 
     </Grid>
 </Page>

@@ -13,10 +13,10 @@
             </ResourceDictionary.MergedDictionaries>
             <local:ViewModelLocator x:Key="ViewModelLocator"/>
             <Style TargetType="Path">
-                <Setter Property="Fill" Value="#FF1A931A"/>
+                <Setter Property="Fill" Value="#FF7C7C7C"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Fill" Value="Pink"/>
+                        <Setter Property="Fill" Value="Red"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
