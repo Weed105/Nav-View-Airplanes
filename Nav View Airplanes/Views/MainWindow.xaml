@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Nav_View_Airplanes"
         mc:Ignorable="d"
         DataContext="{Binding mWindowViewModel, Source={StaticResource ViewModelLocator}}"
+        WindowState="Maximized"
         Title="Nav View Airplanes" Height="450" Width="800">
     <Grid>
         <Frame Content="{Binding PageSource}" NavigationUIVisibility="Hidden" ></Frame>
