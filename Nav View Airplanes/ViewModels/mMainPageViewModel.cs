@@ -10,11 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Maps.MapControl.WPF;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using RestSharp;
+using System.Net.Http;
 
 namespace Nav_View_Airplanes.ViewModels
 {
@@ -32,48 +35,32 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider.Instance;
             gMapControl.MinZoom = 2;
             gMapControl.MaxZoom = 17;
+            PointLatLng russiaCenter = new PointLatLng(60.0, 100.0);
+            gMapControl.Position = russiaCenter;
             gMapControl.Zoom = 4;
             gMapControl.ShowCenter = false;
             gMapControl.MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionWithoutCenter;
             gMapControl.CanDragMap = true;
-            gMapControl.ClipToBounds= true;
-
+            gMapControl.ClipToBounds = false;
             gMapControl.DragButton = MouseButton.Left;
             gMapControl.SetPositionByKeywords("Russia");
+            gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
 
 
-            //// Установите позицию центра карты на Россию
-            //PointLatLng center = new PointLatLng(55.7558, 37.6173); // Координаты центра России
-            //gMapControl.Position = center;
+            //Для учета выполнения рейсов
+            //В бд добавить маршрут(замена рейса) и расписание                          !!!
+            //Статус рейса
 
-            //// Создайте полигон, который охватывает только Россию
-            //List<PointLatLng> points = new List<PointLatLng>();
-            //points.Add(new PointLatLng(58.525698, 29.900456)); // Верхний левый угол
-            //points.Add(new PointLatLng(58.525698, 166.301865)); // Верхний правый угол
-            //points.Add(new PointLatLng(41.186737, 166.301865)); // Нижний правый угол
-            //points.Add(new PointLatLng(41.186737, 29.900456)); // Нижний левый угол
-            //GMapPolygon polygon = new GMapPolygon(points );
 
-            // Создаем полигон, охватывающий только Россию, и добавляем его на карту
-            GMapPolygon russiaPolygon = new GMapPolygon(
-                new List<PointLatLng>
-                {
-                    new PointLatLng(82.968537, 18.666245),
-                    new PointLatLng(82.968537, 179.999977),
-                    new PointLatLng(41.185471, 179.999977),
-                    new PointLatLng(41.185471, 18.666245)
-                } 
-            );
-            gMapControl.MouseDoubleClick += Click;
-            //gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
-        }
-        void Click(object sender, MouseButtonEventArgs e)
-        {
-            Point clickPoint = e.GetPosition(gMapControl);
-            MessageBox.Show(clickPoint.X.ToString() + " " + clickPoint.Y.ToString());
-            PointLatLng point = gMapControl.FromLocalToLatLng((int)clickPoint.X, (int)clickPoint.Y);
-            GMapMarker marker = new GMapMarker(point);
-            gMapControl.Markers.Add(marker);
+
+            //HttpClient client = new HttpClient();
+            //client.BaseAddress = new Uri("http://airlabs.co/api/v9/ping?api_key=c63254e2-19ab-442f-b090-8b0b2e63d4a1");
+            //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            //HttpResponseMessage response = client.GetAsync(client.BaseAddress).Result;
+            //MessageBox.Show(response.Content.ToString());
+
+            //var client = new RestClient("http://airlabs.co/api/v9/ping?api_key=c63254e2-19ab-442f-b090-8b0b2e63d4a1");
         }
     }
 }
