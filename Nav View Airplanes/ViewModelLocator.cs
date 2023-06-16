@@ -20,7 +20,9 @@ namespace Nav_View_Airplanes
             services.AddTransient<mMainPageViewModel>();
 
             services.AddSingleton<PageService>();
+            services.AddSingleton<GetService>();
 
+            services.AddDbContext<FlightContext>();
             provider = services.BuildServiceProvider();
             foreach (var service in services)
             {

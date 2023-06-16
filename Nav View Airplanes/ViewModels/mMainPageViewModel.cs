@@ -22,17 +22,20 @@ using System.Net.Http.Headers;
 using System.Net;
 using System.Threading;
 using static GMap.NET.Entity.OpenStreetMapRouteEntity;
+using Nav_View_Airplanes.Models;
 
 namespace Nav_View_Airplanes.ViewModels
 {
     public class mMainPageViewModel : BindableBase
     {
         private readonly PageService _pageService;
+        private readonly GetService _getService;
 
-        System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+        DispatcherTimer dispatcherTimer = new DispatcherTimer();
 
         public GMapControl gMapControl { get; set; }
         public GMapMarker Marker { get; set; }
+        public List<Airport> Airports { get; set; }
 
         double lat = 0;
         double lng = 0;
@@ -43,9 +46,11 @@ namespace Nav_View_Airplanes.ViewModels
         double finalLat = 55.2522;
         double finalLng = 37.6156;
 
-        public mMainPageViewModel(PageService pageService)
+        public mMainPageViewModel(PageService pageService, GetService getService)
         {
             _pageService = pageService;
+            _getService = getService;
+
             gMapControl = new GMapControl();
             GMap.NET.GMaps.Instance.Mode = AccessMode.ServerAndCache; 
             gMapControl.MapProvider = OpenStreetMapProvider.Instance;
@@ -63,16 +68,14 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
             gMapControl.MouseDoubleClick += Click;
 
-            AddMarker(55.7522, 37.6156);
-            AddMarker(54.5529, 55.8860);
             AddPlane(54.0529, 55.8860); // +0.2 : -0.4
 
-            var response = GetCall();
-            if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                string result = response.Result.Content.ReadAsStringAsync().Result;
-                MessageBox.Show(result);
-            }
+            //var response = GetCall();
+            //if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            //{
+            //    string result = response.Result.Content.ReadAsStringAsync().Result;
+            //    MessageBox.Show(result);
+            //}
 
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
@@ -82,6 +85,29 @@ namespace Nav_View_Airplanes.ViewModels
             lng = Marker.Position.Lng;
             stepLat = (finalLat - lat) / 100;
             stepLng = (finalLng - lng) / 100;
+
+            LoadAirports();
+        }
+        public async void LoadAirports()
+        {
+            if (gMapControl.Markers.Count == 1)
+            {
+                var airportsDb = await _getService.GetAirports();
+                Airports = airportsDb;
+                for (int i = 0; i < Airports.Count; i++)
+                {
+                    GMapMarker marker = new GMapMarker(new PointLatLng(Airports[i].X, Airports[i].Y));
+                    marker.Shape = new Rectangle()
+                    {
+                        Width = 10,
+                        Height = 10,
+                        Fill = Brushes.OrangeRed,
+                        RenderTransform = new RotateTransform(45),
+                    };
+                    gMapControl.Markers.Add(marker);
+                }
+            }
+            
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {            
@@ -94,7 +120,6 @@ namespace Nav_View_Airplanes.ViewModels
                 lat += stepLat;
                 lng += stepLng;
                 Marker.Position = new PointLatLng(lat, lng);
-                gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(lat, lng);
             }
             i += 1;
         }
@@ -123,27 +148,16 @@ namespace Nav_View_Airplanes.ViewModels
             //    gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(lat, lng);
             //    Thread.Sleep(100);
             //}
+
         }
 
-        private void AddMarker(double lat, double lng)
-        {
-            GMapMarker marker = new GMapMarker(new PointLatLng(lat, lng));
-            marker.Shape = new Ellipse()
-            {
-                Width = 12,
-                Height = 12,
-                Fill = Brushes.Red,
-            };
-            gMapControl.Markers.Add(marker);
-        }
         private void AddPlane(double lat, double lng)
         {
             //AddMarker(55.7522, 37.6156);
             //AddMarker(54.5529, 55.8860);
 
-            double rad = Math.Atan((55.8860 - 71.4304) / (54.5529 - 51.1282)) * (180 / Math.PI);
+            double rad = Math.Atan((55.8860 - 37.6156) / (54.5529 - 55.7522)) * (180 / Math.PI);
 
-            //51.128207, 71.430420
             Marker = new GMapMarker(new PointLatLng(lat, lng));
             Marker.Shape = new Image()
             {
@@ -152,31 +166,30 @@ namespace Nav_View_Airplanes.ViewModels
                 Height = 22,
                 RenderTransform = new RotateTransform(rad),
             };
-            gMapControl.Markers.Add(Marker);
-            
+            gMapControl.Markers.Add(Marker);            
         }
-        public static Task<HttpResponseMessage> GetCall()
-        {
-            try
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                string apiUrl = "https://opensky-network.org/api/flights/all?begin=1686672129&end=1686758529";
-                using (HttpClient client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(apiUrl);
-                    client.Timeout = TimeSpan.FromSeconds(900);
-                    client.DefaultRequestHeaders.Accept.Clear();
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    var response = client.GetAsync(apiUrl);
-                    response.Wait();
-                    return response;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+        //public static Task<HttpResponseMessage> GetCall()
+        //{
+        //    try
+        //    {
+        //        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        //        string apiUrl = "https://opensky-network.org/api/flights/all?begin=1686672129&end=1686758529";
+        //        using (HttpClient client = new HttpClient())
+        //        {
+        //            client.BaseAddress = new Uri(apiUrl);
+        //            client.Timeout = TimeSpan.FromSeconds(900);
+        //            client.DefaultRequestHeaders.Accept.Clear();
+        //            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        //            var response = client.GetAsync(apiUrl);
+        //            response.Wait();
+        //            return response;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //}
     }
 }
 // Гениальные мысли
