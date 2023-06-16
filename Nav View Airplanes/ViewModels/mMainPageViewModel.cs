@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Maps.MapControl.WPF;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -18,6 +17,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using RestSharp;
 using System.Net.Http;
+using System.Windows.Threading;
+using System.Net.Http.Headers;
+using System.Net;
+using System.Threading;
+using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 
 namespace Nav_View_Airplanes.ViewModels
 {
@@ -25,14 +29,26 @@ namespace Nav_View_Airplanes.ViewModels
     {
         private readonly PageService _pageService;
 
+        System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+
         public GMapControl gMapControl { get; set; }
+        public GMapMarker Marker { get; set; }
+
+        double lat = 0;
+        double lng = 0;
+        double stepLat = 0;
+        double stepLng = 0;
+
+        int i = 0;
+        double finalLat = 55.2522;
+        double finalLng = 37.6156;
 
         public mMainPageViewModel(PageService pageService)
         {
             _pageService = pageService;
             gMapControl = new GMapControl();
-            GMap.NET.GMaps.Instance.Mode = GMap.NET.AccessMode.ServerAndCache;
-            gMapControl.MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider.Instance;
+            GMap.NET.GMaps.Instance.Mode = AccessMode.ServerAndCache; 
+            gMapControl.MapProvider = OpenStreetMapProvider.Instance;
             gMapControl.MinZoom = 2;
             gMapControl.MaxZoom = 17;
             PointLatLng russiaCenter = new PointLatLng(60.0, 100.0);
@@ -45,22 +61,125 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.DragButton = MouseButton.Left;
             gMapControl.SetPositionByKeywords("Russia");
             gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
+            gMapControl.MouseDoubleClick += Click;
+
+            AddMarker(55.7522, 37.6156);
+            AddMarker(54.5529, 55.8860);
+            AddPlane(54.0529, 55.8860); // +0.2 : -0.4
+
+            var response = GetCall();
+            if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                string result = response.Result.Content.ReadAsStringAsync().Result;
+                MessageBox.Show(result);
+            }
+
+            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+            dispatcherTimer.Start();
+
+            lat = Marker.Position.Lat;
+            lng = Marker.Position.Lng;
+            stepLat = (finalLat - lat) / 100;
+            stepLng = (finalLng - lng) / 100;
+        }
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {            
+            //gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(55.7522, 37.6156);
+
+            
+
+            if (i < 100 )
+            {
+                lat += stepLat;
+                lng += stepLng;
+                Marker.Position = new PointLatLng(lat, lng);
+                gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(lat, lng);
+            }
+            i += 1;
+        }
+        void Click(object sender, MouseButtonEventArgs e)
+        {
+
+            //Point point = e.GetPosition(e.Source as FrameworkElement);
+            //MessageBox.Show(gMapControl.FromLocalToLatLng((int)point.X, (int)point.Y).Lat.ToString() + " " + gMapControl.FromLocalToLatLng((int)point.X, (int)point.Y).Lng.ToString());
+
+            //gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(54.5529, 55.8860);
+            //double lat = Marker.Position.Lat;
+            //double lng = Marker.Position.Lng;
 
 
-            //Для учета выполнения рейсов
-            //В бд добавить маршрут(замена рейса) и расписание                          !!!
-            //Статус рейса
+            //double finalLat = 55.7522;
+            //double finalLng = 37.6156;
 
+            //double stepLat = (finalLat - lat) / 10;
+            //double stepLng = (finalLng - lng) / 10;
 
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    lat += stepLat;
+            //    lng += stepLng;
+            //    Marker.Position = new PointLatLng(lat, lng);
+            //    gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(lat, lng);
+            //    Thread.Sleep(100);
+            //}
+        }
 
-            //HttpClient client = new HttpClient();
-            //client.BaseAddress = new Uri("http://airlabs.co/api/v9/ping?api_key=c63254e2-19ab-442f-b090-8b0b2e63d4a1");
-            //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+        private void AddMarker(double lat, double lng)
+        {
+            GMapMarker marker = new GMapMarker(new PointLatLng(lat, lng));
+            marker.Shape = new Ellipse()
+            {
+                Width = 12,
+                Height = 12,
+                Fill = Brushes.Red,
+            };
+            gMapControl.Markers.Add(marker);
+        }
+        private void AddPlane(double lat, double lng)
+        {
+            //AddMarker(55.7522, 37.6156);
+            //AddMarker(54.5529, 55.8860);
 
-            //HttpResponseMessage response = client.GetAsync(client.BaseAddress).Result;
-            //MessageBox.Show(response.Content.ToString());
+            double rad = Math.Atan((55.8860 - 71.4304) / (54.5529 - 51.1282)) * (180 / Math.PI);
 
-            //var client = new RestClient("http://airlabs.co/api/v9/ping?api_key=c63254e2-19ab-442f-b090-8b0b2e63d4a1");
+            //51.128207, 71.430420
+            Marker = new GMapMarker(new PointLatLng(lat, lng));
+            Marker.Shape = new Image()
+            {
+                Source = new BitmapImage(new Uri("../../../Resources/plane.png", UriKind.Relative)),
+                Width = 22,
+                Height = 22,
+                RenderTransform = new RotateTransform(rad),
+            };
+            gMapControl.Markers.Add(Marker);
+            
+        }
+        public static Task<HttpResponseMessage> GetCall()
+        {
+            try
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                string apiUrl = "https://opensky-network.org/api/flights/all?begin=1686672129&end=1686758529";
+                using (HttpClient client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(apiUrl);
+                    client.Timeout = TimeSpan.FromSeconds(900);
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var response = client.GetAsync(apiUrl);
+                    response.Wait();
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }
+// Гениальные мысли
+// 15.06 Было добвалено изменение положения самолета за 10 секунд от А до Б
+// * Если будет задаваться время отбытия и прибития то можно будет брать их разницу и использовать как точки карте (гениально!)
+// * Не забудь исправить бд для правильного использования 
