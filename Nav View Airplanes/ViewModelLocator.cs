@@ -21,6 +21,7 @@ namespace Nav_View_Airplanes
 
             services.AddSingleton<PageService>();
             services.AddSingleton<GetService>();
+            services.AddSingleton<UserService>();
 
             services.AddDbContext<FlightContext>();
             provider = services.BuildServiceProvider();

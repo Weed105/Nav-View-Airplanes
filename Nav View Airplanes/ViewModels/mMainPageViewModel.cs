@@ -28,7 +28,14 @@ namespace Nav_View_Airplanes.ViewModels
 {
     public class mMainPageViewModel : BindableBase
     {
+
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public string TextButton { get; set; } = "Войти";
+        public string ErrorMessageButton { get; set; }
+
         private readonly PageService _pageService;
+        private readonly UserService _userService;
         private readonly GetService _getService;
 
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
@@ -36,22 +43,15 @@ namespace Nav_View_Airplanes.ViewModels
         public GMapControl gMapControl { get; set; }
         public GMapMarker Marker { get; set; }
         public List<Airport> Airports { get; set; }
+        public Visibility Visibility { get; set; } = Visibility.Collapsed;
+        public Visibility ButtonVisibility { get; set; } = Visibility.Collapsed;
         public List<Flight> Flights { get; set; }
         public List<(GMapMarker, double, double, double, Flight)> Vehicles { get; set; } = new();
-
-        double lat = 0;
-        double lng = 0;
-        double stepLat = 0;
-        double stepLng = 0;
-
-        int i = 0;
-        double finalLat = 55.2522;
-        double finalLng = 37.6156;
-
-        public mMainPageViewModel(PageService pageService, GetService getService)
+        public mMainPageViewModel(PageService pageService, GetService getService, UserService userService)
         {
             _pageService = pageService;
             _getService = getService;
+            _userService = userService;
 
             gMapControl = new GMapControl();
             GMap.NET.GMaps.Instance.Mode = AccessMode.ServerAndCache; 
@@ -68,28 +68,18 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.DragButton = MouseButton.Left;
             gMapControl.SetPositionByKeywords("Russia");
             gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
-            gMapControl.MouseDoubleClick += Click;
-
-            //AddPlane(54.0529, 55.8860); // +0.2 : -0.4
-
-            //var response = GetCall();
-            //if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-            //{
-            //    string result = response.Result.Content.ReadAsStringAsync().Result;
-            //    MessageBox.Show(result);
-            //}
+            gMapControl.MouseDown += HideAuth;
 
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
 
-            //lat = Marker.Position.Lat;
-            //lng = Marker.Position.Lng;
-            //stepLat = (finalLat - lat) / 100;
-            //stepLng = (finalLng - lng) / 100;
-
             LoadAirports();
             LoadFlights();
+        }
+        public void HideAuth(object sender, MouseEventArgs e)
+        {
+            Visibility = Visibility.Collapsed;
         }
         public async void LoadAirports()
         {
@@ -137,81 +127,15 @@ namespace Nav_View_Airplanes.ViewModels
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            //gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(55.7522, 37.6156);
-
-            //foreach (var veh in  Vehicles)
-            //{
-
-            //}
             for (int i = 0; i < Vehicles.Count; i++)
             {
-                double lat2 = Vehicles[i].Item1.Position.Lat;
-                double lng2 = Vehicles[i].Item1.Position.Lng;
                 if (DateTime.Now <= Vehicles[i].Item5.ArrivalTime)
                 {
                     Vehicles[i].Item1.Position = new PointLatLng(Vehicles[i].Item1.Position.Lat + Vehicles[i].Item2, Vehicles[i].Item1.Position.Lng + Vehicles[i].Item3);
                 }
-                //for (int j = 0; j < Vehicles[i].Item4; j++)
-                //{
-                //    //lat2 += Vehicles[i].Item2;
-                //    //lng2 += Vehicles[i].Item2;
-                //}
             }
-
-
-            //if (i < 100 )
-            //{
-            //    lat += stepLat;
-            //    lng += stepLng;
-            //    Marker.Position = new PointLatLng(lat, lng);
-            //}
-            //i += 1;
-        }
-        void Click(object sender, MouseButtonEventArgs e)
-        {
-
-            //Point point = e.GetPosition(e.Source as FrameworkElement);
-            //MessageBox.Show(gMapControl.FromLocalToLatLng((int)point.X, (int)point.Y).Lat.ToString() + " " + gMapControl.FromLocalToLatLng((int)point.X, (int)point.Y).Lng.ToString());
-
-            //gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(54.5529, 55.8860);
-            //double lat = Marker.Position.Lat;
-            //double lng = Marker.Position.Lng;
-
-
-            //double finalLat = 55.7522;
-            //double finalLng = 37.6156;
-
-            //double stepLat = (finalLat - lat) / 10;
-            //double stepLng = (finalLng - lng) / 10;
-
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    lat += stepLat;
-            //    lng += stepLng;
-            //    Marker.Position = new PointLatLng(lat, lng);
-            //    gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(lat, lng);
-            //    Thread.Sleep(100);
-            //}
-
         }
 
-        private void AddPlane(double lat, double lng)
-        {
-            //AddMarker(55.7522, 37.6156);
-            //AddMarker(54.5529, 55.8860);
-
-            double rad = Math.Atan((55.8860 - 37.6156) / (54.5529 - 55.7522)) * (180 / Math.PI);
-
-            Marker = new GMapMarker(new PointLatLng(lat, lng));
-            Marker.Shape = new Image()
-            {
-                Source = new BitmapImage(new Uri("../../../Resources/plane.png", UriKind.Relative)),
-                Width = 22,
-                Height = 22,
-                RenderTransform = new RotateTransform(rad),
-            };
-            gMapControl.Markers.Add(Marker);            
-        } 
         private void AddPlane2(double lat, double lng, double step1, double step2, double steps, Flight flight)
         {
             GMapMarker marker = new GMapMarker(new PointLatLng(lat, lng));
@@ -226,28 +150,39 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.Markers.Add(marker);
             Vehicles.Add((marker, step1, step2, steps, flight));
         }
-        //public static Task<HttpResponseMessage> GetCall()
-        //{
-        //    try
-        //    {
-        //        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        //        string apiUrl = "https://opensky-network.org/api/flights/all?begin=1686672129&end=1686758529";
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            client.BaseAddress = new Uri(apiUrl);
-        //            client.Timeout = TimeSpan.FromSeconds(900);
-        //            client.DefaultRequestHeaders.Accept.Clear();
-        //            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        //            var response = client.GetAsync(apiUrl);
-        //            response.Wait();
-        //            return response;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //}
+        public DelegateCommand ViewAuth => new(() =>
+        {
+            if (!TextButton.Equals("Выйти"))
+                Visibility = Visibility.Visible;
+            else
+            {
+                ButtonVisibility = Visibility.Collapsed;
+                Global.CurrentUser = null;
+                TextButton = "Войти";
+            }
+        });
+
+        public AsyncCommand SignInCommand => new(async () =>
+        { 
+                await Task.Run(async () =>
+                {
+                    if (await _userService.AuthorizationAsync(Login, Password))
+                    {
+                        ErrorMessageButton = string.Empty;
+                        Visibility = Visibility.Collapsed;
+                        TextButton = "Выйти";
+                        Login = "";
+                        Password = "";
+                        ButtonVisibility = Visibility.Visible;
+                        MessageBox.Show("Вы авторизовались!");
+                    }
+                    else
+                    {
+                        ErrorMessageButton = "Неверный логин или пароль";
+                    }
+                });
+
+        });
     }
 }
 // Гениальные мысли
