@@ -22,7 +22,7 @@ namespace Nav_View_Airplanes.Services
             List<Airport> airports = new ();
             try
             {
-                var airportsDB = _flightContext.Airports.ToList();
+                var airportsDB =  _flightContext.Airports.ToList();
                 await Task.Run(() =>
                 {
                     airports = airportsDB;
@@ -33,6 +33,23 @@ namespace Nav_View_Airplanes.Services
                 throw;
             }
             return airports;
+        }        
+        public async Task<List<Flight>> GetFlights()
+        {
+            List<Flight> flights = new ();
+            try
+            {
+                var flightsDB =  _flightContext.Flights.ToList();
+                await Task.Run(() =>
+                {
+                    flights = flightsDB;
+                });
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return flights;
         }
     }
 }

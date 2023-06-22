@@ -36,6 +36,8 @@ namespace Nav_View_Airplanes.ViewModels
         public GMapControl gMapControl { get; set; }
         public GMapMarker Marker { get; set; }
         public List<Airport> Airports { get; set; }
+        public List<Flight> Flights { get; set; }
+        public List<(GMapMarker, double, double, double, Flight)> Vehicles { get; set; } = new();
 
         double lat = 0;
         double lng = 0;
@@ -68,7 +70,7 @@ namespace Nav_View_Airplanes.ViewModels
             gMapControl.EmptyMapBackground = new SolidColorBrush(Color.FromRgb(170, 211, 223));
             gMapControl.MouseDoubleClick += Click;
 
-            AddPlane(54.0529, 55.8860); // +0.2 : -0.4
+            //AddPlane(54.0529, 55.8860); // +0.2 : -0.4
 
             //var response = GetCall();
             //if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -81,16 +83,17 @@ namespace Nav_View_Airplanes.ViewModels
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
 
-            lat = Marker.Position.Lat;
-            lng = Marker.Position.Lng;
-            stepLat = (finalLat - lat) / 100;
-            stepLng = (finalLng - lng) / 100;
+            //lat = Marker.Position.Lat;
+            //lng = Marker.Position.Lng;
+            //stepLat = (finalLat - lat) / 100;
+            //stepLng = (finalLng - lng) / 100;
 
             LoadAirports();
+            LoadFlights();
         }
         public async void LoadAirports()
         {
-            if (gMapControl.Markers.Count == 1)
+            if (gMapControl.Markers.Count == 0)
             {
                 var airportsDb = await _getService.GetAirports();
                 Airports = airportsDb;
@@ -106,22 +109,63 @@ namespace Nav_View_Airplanes.ViewModels
                     };
                     gMapControl.Markers.Add(marker);
                 }
-            }
-            
+            }            
         }
+        public async void LoadFlights()
+        {
+                var flightsDb = await _getService.GetFlights();
+                Flights = flightsDb;
+                for (int i = 0; i< Flights.Count; i++)
+                {
+                    if (Flights[i].Status == 1)
+                    {
+                        if (DateTime.Now > Flights[i].DepartureTime && DateTime.Now < Flights[i].ArrivalTime)
+                        {
+                            double steps = (Flights[i].ArrivalTime - Flights[i].DepartureTime).TotalSeconds;
+                            double step = (DateTime.Now - Flights[i].DepartureTime).TotalSeconds;
+
+                            double step1 = (Flights[i].ArrivalAirportNavigation.X - Flights[i].DepartureAirportNavigation.X) / steps;
+                            double step2 = (Flights[i].ArrivalAirportNavigation.Y - Flights[i].DepartureAirportNavigation.Y) / steps;
+
+                            double lat = Flights[i].DepartureAirportNavigation.X + (step1 * step);
+                            double lng = Flights[i].DepartureAirportNavigation.Y + (step2 * step);
+                            AddPlane2(lat, lng, step1, step2, steps, Flights[i]);
+                        }
+                    }
+                }
+        }
+
         private void dispatcherTimer_Tick(object sender, EventArgs e)
-        {            
+        {
             //gMapControl.Markers[gMapControl.Markers.Count - 1].Position = new PointLatLng(55.7522, 37.6156);
 
-            
+            //foreach (var veh in  Vehicles)
+            //{
 
-            if (i < 100 )
+            //}
+            for (int i = 0; i < Vehicles.Count; i++)
             {
-                lat += stepLat;
-                lng += stepLng;
-                Marker.Position = new PointLatLng(lat, lng);
+                double lat2 = Vehicles[i].Item1.Position.Lat;
+                double lng2 = Vehicles[i].Item1.Position.Lng;
+                if (DateTime.Now <= Vehicles[i].Item5.ArrivalTime)
+                {
+                    Vehicles[i].Item1.Position = new PointLatLng(Vehicles[i].Item1.Position.Lat + Vehicles[i].Item2, Vehicles[i].Item1.Position.Lng + Vehicles[i].Item3);
+                }
+                //for (int j = 0; j < Vehicles[i].Item4; j++)
+                //{
+                //    //lat2 += Vehicles[i].Item2;
+                //    //lng2 += Vehicles[i].Item2;
+                //}
             }
-            i += 1;
+
+
+            //if (i < 100 )
+            //{
+            //    lat += stepLat;
+            //    lng += stepLng;
+            //    Marker.Position = new PointLatLng(lat, lng);
+            //}
+            //i += 1;
         }
         void Click(object sender, MouseButtonEventArgs e)
         {
@@ -167,6 +211,20 @@ namespace Nav_View_Airplanes.ViewModels
                 RenderTransform = new RotateTransform(rad),
             };
             gMapControl.Markers.Add(Marker);            
+        } 
+        private void AddPlane2(double lat, double lng, double step1, double step2, double steps, Flight flight)
+        {
+            GMapMarker marker = new GMapMarker(new PointLatLng(lat, lng));
+            double rad = Math.Atan((flight.ArrivalAirportNavigation.Y - flight.DepartureAirportNavigation.Y) / (flight.ArrivalAirportNavigation.X - flight.DepartureAirportNavigation.X)) * (180 / Math.PI);
+            marker.Shape = new Image()
+            {
+                Source = new BitmapImage(new Uri("../../../Resources/plane.png", UriKind.Relative)),
+                Width = 22,
+                Height = 22,
+                RenderTransform = new RotateTransform(rad),
+            };
+            gMapControl.Markers.Add(marker);
+            Vehicles.Add((marker, step1, step2, steps, flight));
         }
         //public static Task<HttpResponseMessage> GetCall()
         //{
