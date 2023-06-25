@@ -17,7 +17,7 @@ namespace Nav_View_Airplanes
             Patronymic = string.Empty,
             Login = string.Empty,
             Password = string.Empty,
-            Indicator = 0,
+            Indicator = 2,
         };
     }
 }

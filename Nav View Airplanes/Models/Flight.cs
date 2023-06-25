@@ -17,7 +17,7 @@ public partial class Flight
 
     public DateTime ArrivalTime { get; set; }
 
-    public int? Status { get; set; }
+    public int Status { get; set; }
 
     public virtual Airport ArrivalAirportNavigation { get; set; } = null!;
 
@@ -26,4 +26,6 @@ public partial class Flight
     public virtual Plane IdplaneNavigation { get; set; } = null!;
 
     public virtual Intermediate? Intermediate { get; set; }
+
+    public virtual FlightStatus StatusNavigation { get; set; } = null!;
 }

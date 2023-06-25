@@ -26,10 +26,23 @@
             <Label VerticalAlignment="Center" Margin="10, 0,0,0">Nav View Airplanes</Label>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
 
-                <Button Style="{StaticResource ButtonToText}" 
-                        Visibility="{Binding ButtonVisibility}"
+                <Button 
+                    Style="{StaticResource ButtonToText}" 
+                    Command="{Binding SignInFlight}"
+                    Visibility="{Binding ButtonVisibility}"
                     Content="Панель рейсов"/>
-                <Button Style="{StaticResource ButtonToText}" 
+                <Button 
+                    Style="{StaticResource ButtonToText}" 
+                    Command="{Binding SignInDisp}"
+                    Visibility="{Binding AdminVisibility}"
+                    Content="Панель диспетчеров"/>
+                <Button 
+                    Style="{StaticResource ButtonToText}" 
+                    Command="{Binding SignInPlane}"
+                    Visibility="{Binding AdminVisibility}"
+                    Content="Панель самолетов"/>
+                <Button 
+                    Style="{StaticResource ButtonToText}" 
                     Command="{Binding ViewAuth}"
                     Content="{Binding TextButton}"/>
             </StackPanel>

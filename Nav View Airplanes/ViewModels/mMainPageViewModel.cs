@@ -6,8 +6,6 @@ using Nav_View_Airplanes.Services;
 using Nav_View_Airplanes.Views;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,13 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using RestSharp;
-using System.Net.Http;
 using System.Windows.Threading;
-using System.Net.Http.Headers;
-using System.Net;
-using System.Threading;
-using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 using Nav_View_Airplanes.Models;
 
 namespace Nav_View_Airplanes.ViewModels
@@ -45,6 +37,7 @@ namespace Nav_View_Airplanes.ViewModels
         public List<Airport> Airports { get; set; }
         public Visibility Visibility { get; set; } = Visibility.Collapsed;
         public Visibility ButtonVisibility { get; set; } = Visibility.Collapsed;
+        public Visibility AdminVisibility { get; set; } = Visibility.Collapsed;
         public List<Flight> Flights { get; set; }
         public List<(GMapMarker, double, double, double, Flight)> Vehicles { get; set; } = new();
         public mMainPageViewModel(PageService pageService, GetService getService, UserService userService)
@@ -73,6 +66,24 @@ namespace Nav_View_Airplanes.ViewModels
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
+            if (Global.CurrentUser != null && Global.CurrentUser.Indicator == 1)
+            {
+                ErrorMessageButton = string.Empty;
+                Visibility = Visibility.Collapsed;
+                TextButton = "Выйти";
+                Login = "";
+                Password = "";
+                ButtonVisibility = Visibility.Visible;
+            }
+            if (Global.CurrentUser != null && Global.CurrentUser.Indicator == 0)
+            {
+                ErrorMessageButton = string.Empty;
+                Visibility = Visibility.Collapsed;
+                TextButton = "Выйти";
+                Login = "";
+                Password = "";
+                AdminVisibility = Visibility.Visible;
+            }
 
             LoadAirports();
             LoadFlights();
@@ -107,8 +118,6 @@ namespace Nav_View_Airplanes.ViewModels
                 Flights = flightsDb;
                 for (int i = 0; i< Flights.Count; i++)
                 {
-                    if (Flights[i].Status == 1)
-                    {
                         if (DateTime.Now > Flights[i].DepartureTime && DateTime.Now < Flights[i].ArrivalTime)
                         {
                             double steps = (Flights[i].ArrivalTime - Flights[i].DepartureTime).TotalSeconds;
@@ -120,9 +129,20 @@ namespace Nav_View_Airplanes.ViewModels
                             double lat = Flights[i].DepartureAirportNavigation.X + (step1 * step);
                             double lng = Flights[i].DepartureAirportNavigation.Y + (step2 * step);
                             AddPlane2(lat, lng, step1, step2, steps, Flights[i]);
+                    Flights[i].Status = 2;
+                    _getService.ChangeState(Flights[i]);
                         }
-                    }
+                        if (DateTime.Now < Flights[i].DepartureTime)
+                {
+                    Flights[i].Status = 3;
+                    _getService.ChangeState(Flights[i]);
                 }
+                if (DateTime.Now >  Flights[i].ArrivalTime)
+                {
+                    Flights[i].Status = 1;
+                    _getService.ChangeState(Flights[i]);
+                }
+            }
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
@@ -132,6 +152,11 @@ namespace Nav_View_Airplanes.ViewModels
                 if (DateTime.Now <= Vehicles[i].Item5.ArrivalTime)
                 {
                     Vehicles[i].Item1.Position = new PointLatLng(Vehicles[i].Item1.Position.Lat + Vehicles[i].Item2, Vehicles[i].Item1.Position.Lng + Vehicles[i].Item3);
+                }
+                else
+                {
+                    Vehicles[i].Item5.Status = 1;
+                    _getService.ChangeState(Vehicles[i].Item5);
                 }
             }
         }
@@ -157,24 +182,29 @@ namespace Nav_View_Airplanes.ViewModels
             else
             {
                 ButtonVisibility = Visibility.Collapsed;
+                AdminVisibility = Visibility.Collapsed;
                 Global.CurrentUser = null;
                 TextButton = "Войти";
             }
         });
-
+        public DelegateCommand SignInFlight => new(() => _pageService.ChangePage(new DispatcherPage()));
+        public DelegateCommand SignInDisp => new(() => _pageService.ChangePage(new PersonPage()));
+        public DelegateCommand SignInPlane => new(() => _pageService.ChangePage(new PlanePage()));
         public AsyncCommand SignInCommand => new(async () =>
         { 
                 await Task.Run(async () =>
                 {
                     if (await _userService.AuthorizationAsync(Login, Password))
                     {
+                        if (Global.CurrentUser.Indicator == 1)
+                            ButtonVisibility = Visibility.Visible;
+                        else
+                            AdminVisibility = Visibility.Visible;
                         ErrorMessageButton = string.Empty;
                         Visibility = Visibility.Collapsed;
                         TextButton = "Выйти";
                         Login = "";
                         Password = "";
-                        ButtonVisibility = Visibility.Visible;
-                        MessageBox.Show("Вы авторизовались!");
                     }
                     else
                     {
@@ -183,6 +213,7 @@ namespace Nav_View_Airplanes.ViewModels
                 });
 
         });
+
     }
 }
 // Гениальные мысли

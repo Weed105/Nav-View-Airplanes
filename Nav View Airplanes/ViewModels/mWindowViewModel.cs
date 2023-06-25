@@ -21,7 +21,7 @@ namespace Nav_View_Airplanes.ViewModels
         {
             _pageService = pageService;
             _pageService.onPageChanged += (page) => PageSource = page;
-            _pageService.ChangePage(new MainPage());
+            _pageService.ChangePage(new PersonPage());
         }
     }
 }

@@ -19,6 +19,7 @@ public partial class FlightContext : DbContext
     public virtual DbSet<Airport> Airports { get; set; }
 
     public virtual DbSet<Flight> Flights { get; set; }
+    public virtual DbSet<FlightStatus> FlightStatuses { get; set; }
 
     public virtual DbSet<Intermediate> Intermediates { get; set; }
 
@@ -50,6 +51,18 @@ public partial class FlightContext : DbContext
                 .HasColumnName("city");
             entity.Property(e => e.X).HasColumnName("x");
             entity.Property(e => e.Y).HasColumnName("y");
+        });
+
+        modelBuilder.Entity<FlightStatus>(entity =>
+        {
+            entity.HasKey(e => e.IdflightStatus).HasName("PRIMARY");
+
+            entity.ToTable("flight_status");
+
+            entity.Property(e => e.IdflightStatus).HasColumnName("idflight_status");
+            entity.Property(e => e.FlightStatus1)
+                .HasMaxLength(45)
+                .HasColumnName("flight_status");
         });
 
         modelBuilder.Entity<Flight>(entity =>
@@ -92,6 +105,11 @@ public partial class FlightContext : DbContext
                 .HasForeignKey(d => d.Idplane)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_idplane");
+
+            entity.HasOne(d => d.StatusNavigation).WithMany(p => p.Flights)
+                .HasForeignKey(d => d.Status)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_status");
         });
 
         modelBuilder.Entity<Intermediate>(entity =>

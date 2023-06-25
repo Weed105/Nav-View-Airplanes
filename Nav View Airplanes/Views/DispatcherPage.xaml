@@ -1,0 +1,149 @@
+﻿<Page x:Class="Nav_View_Airplanes.Views.DispatcherPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Nav_View_Airplanes.Views"
+      mc:Ignorable="d" 
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      DataContext="{Binding mDispatcherViewModel, Source={StaticResource ViewModelLocator}}"
+      d:DesignHeight="450" d:DesignWidth="800" Background="#aad3df"
+      Title="DispatcherPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label VerticalAlignment="Center" Margin="10, 0,0,0">Nav View Airplanes</Label>
+        <Label VerticalAlignment="Center" HorizontalAlignment="Center">Панель рейсов</Label>
+        <Button Command="{Binding Back}" Style="{StaticResource ButtonToText}" HorizontalAlignment="Right" Content="Назад"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                Visibility="{Binding ButtonsVisible}"
+                MinWidth="180"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Button 
+                    Command="{Binding AddFlight}"
+                    Content="Добавить"/>
+                <Button 
+                    Command="{Binding ChangeFlight}"
+                    Content="Изменить"/>
+                <Button 
+                    Command="{Binding DeleteFlight}"
+                    Content="Удалить"/>
+            </StackPanel>
+            <StackPanel 
+                Width="300"
+                HorizontalAlignment="Center"
+                Visibility="{Binding ChangeVisible}"
+                VerticalAlignment="Center">
+                <Label HorizontalAlignment="Center">Добавление рейса</Label>
+                <ComboBox
+                Margin="5"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource pwsComboBox}"
+                ItemsSource="{Binding Departuries}"
+                SelectedItem="{Binding SelectedDeparture}"
+                materialDesign:HintAssist.Hint="Откуда"/>
+                <DatePicker
+                Margin="5"
+                BorderBrush="#152b90"
+                VerticalAlignment="Bottom"
+                DisplayDateStart="{Binding Now}"
+                SelectedDate="{Binding SelectedDate}"
+                materialDesign:HintAssist.Hint="День отбытия">
+                </DatePicker>
+                <materialDesign:TimePicker
+                Margin="5"
+                Is24Hours="True"
+                BorderBrush="#152b90"
+                VerticalAlignment="Bottom"
+                SelectedTime="{Binding SelectedTime}"
+                materialDesign:HintAssist.Hint="Время отбытия">
+                </materialDesign:TimePicker>
+                <ComboBox
+                Margin="5"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource pwsComboBox}"
+                SelectedItem="{Binding SelectedArrival}"
+                ItemsSource="{Binding Arrivals}"
+                materialDesign:HintAssist.Hint="Куда"/>
+                <ComboBox
+                Margin="5"
+                VerticalAlignment="Bottom"
+                ItemsSource="{Binding Planes}"
+                SelectedItem="{Binding SelectedPlane}"
+                Style="{StaticResource pwsComboBox}"
+                materialDesign:HintAssist.Hint="Самолет"/>
+                <Button 
+                    Content="{Binding TextButton}"
+                    Command="{Binding AddOrChange}"
+                />
+                <Button 
+                    Command="{Binding HideChange}"
+                    Content="Назад"
+                />
+            </StackPanel>
+            <ListView
+                ItemsSource="{Binding Flights}"
+                SelectedItem="{Binding SelectedFlight}"
+                HorizontalContentAlignment="Stretch"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                Grid.Column="1">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <materialDesign:Card
+                            Padding="8"
+                            Background="#1e55c7"
+                            Foreground="#f1e2b9"
+                            HorizontalAlignment="Stretch">
+                            <Grid HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Bold">Отбытие</TextBlock>
+                                    <TextBlock Text="{Binding DepartureTime.TimeOfDay}"/>
+                                    <TextBlock Text="{Binding DepartureAirportNavigation.City}"/>
+                                    <TextBlock Text="{Binding DepartureTime.Date,  StringFormat='{}{0:M}', ConverterCulture=ru-RU}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Bold" Text="Самолет"/>
+                                    <TextBlock Text="{Binding IdplaneNavigation.Model}"/>
+                                    <TextBlock FontWeight="Bold" Text="Статус рейса"/>
+                                    <TextBlock Text="{Binding StatusNavigation.FlightStatus1}"/>
+                                </StackPanel>
+                                <StackPanel
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Bold">Прибытие</TextBlock>
+                                    <TextBlock Text="{Binding ArrivalTime.TimeOfDay}"/>
+                                    <TextBlock Text="{Binding ArrivalAirportNavigation.City}"/>
+                                    <TextBlock Text="{Binding DepartureTime.Date,  StringFormat='{}{0:M}', ConverterCulture=ru-RU}"/>
+                                </StackPanel>
+                            </Grid>
+                        </materialDesign:Card>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</Page>
