@@ -88,9 +88,41 @@ namespace Nav_View_Airplanes.Services
             }
             return users;
         }
+        public async void AddPlane(Plane plane)
+        {
+            _flightContext.Planes.Add(plane);
+            _flightContext.SaveChanges();
+        }
+        public async void ChangePlane(Plane plane)
+        {
+            Plane plane1 = _flightContext.Planes.Where(i => i.Idplane == plane.Idplane).FirstOrDefault();
+            plane1.Model = plane.Model;
+            plane1.Idairport = plane.Idairport;
+            _flightContext.SaveChanges();
+        }
+        public async void DeletePlane(Plane plane)
+        {
+            _flightContext.Planes.Remove(plane);
+            _flightContext.SaveChanges();
+        }
         public async void AddUser(User user)
         {
             _flightContext.Users.Add(user);
+            _flightContext.SaveChanges();
+        }
+        public async void ChangeUser(User user)
+        {
+            User user1 = _flightContext.Users.Where(i => i.Iduser == user.Iduser).FirstOrDefault();
+            user1.Surname = user.Surname;
+            user1.Name = user.Name;
+            user1.Patronymic = user.Patronymic;
+            user1.Login = user.Login;
+            user1.Password = user.Password;
+            _flightContext.SaveChanges();
+        }
+        public async void DeleteUser(User user)
+        {
+            _flightContext.Users.Remove(user);
             _flightContext.SaveChanges();
         }
         public async void AddFlight(Flight flight)

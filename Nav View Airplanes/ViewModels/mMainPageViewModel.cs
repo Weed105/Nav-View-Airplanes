@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Nav_View_Airplanes.Models;
+using System.Windows.Media.Media3D;
 
 namespace Nav_View_Airplanes.ViewModels
 {
@@ -85,6 +86,18 @@ namespace Nav_View_Airplanes.ViewModels
                 AdminVisibility = Visibility.Visible;
             }
 
+            List<PointLatLng> points = new List<PointLatLng>();
+            points.Add(new PointLatLng(-25.969562, 32.585789));
+            points.Add(new PointLatLng(-25.966205, 32.588171));
+            GMapPolygon polygon = new GMapPolygon(points);
+            polygon.Shape = new Line()
+            {
+                Fill = Brushes.Red,
+                Width = 2,
+                Height = 2,
+            };
+            gMapControl.Markers.Add(polygon);
+
             LoadAirports();
             LoadFlights();
         }
@@ -151,6 +164,7 @@ namespace Nav_View_Airplanes.ViewModels
             {
                 if (DateTime.Now <= Vehicles[i].Item5.ArrivalTime)
                 {
+                    
                     Vehicles[i].Item1.Position = new PointLatLng(Vehicles[i].Item1.Position.Lat + Vehicles[i].Item2, Vehicles[i].Item1.Position.Lng + Vehicles[i].Item3);
                 }
                 else

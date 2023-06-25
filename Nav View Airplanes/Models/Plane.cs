@@ -8,14 +8,7 @@ public partial class Plane
     public int Idplane { get; set; }
 
     public string? Model { get; set; }
-
-    public int? Status { get; set; }
-
     public int? Idairport { get; set; }
-
-    public double? X { get; set; }
-
-    public double? Y { get; set; }
 
     public virtual ICollection<Flight> Flights { get; set; } = new List<Flight>();
 

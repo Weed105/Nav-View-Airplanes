@@ -43,7 +43,7 @@
                 HorizontalAlignment="Center"
                 Visibility="{Binding ChangeVisible}"
                 VerticalAlignment="Center">
-                <Label HorizontalAlignment="Center">Добавление диспетчера</Label>
+                <Label HorizontalAlignment="Center" Content="{Binding TextLabel}"></Label>
 
                 <TextBox Text="{Binding Surname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource pwsTextBox}"

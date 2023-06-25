@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Nav_View_Airplanes.Views"
+      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
       mc:Ignorable="d" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       DataContext="{Binding mDispatcherViewModel, Source={StaticResource ViewModelLocator}}"
@@ -50,7 +51,13 @@
                 Style="{StaticResource pwsComboBox}"
                 ItemsSource="{Binding Departuries}"
                 SelectedItem="{Binding SelectedDeparture}"
-                materialDesign:HintAssist.Hint="Откуда"/>
+                materialDesign:HintAssist.Hint="Откуда">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding SelectDepart}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ComboBox>
                 <DatePicker
                 Margin="5"
                 BorderBrush="#152b90"

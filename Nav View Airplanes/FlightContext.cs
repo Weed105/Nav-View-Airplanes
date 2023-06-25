@@ -151,9 +151,6 @@ public partial class FlightContext : DbContext
             entity.Property(e => e.Model)
                 .HasMaxLength(45)
                 .HasColumnName("model");
-            entity.Property(e => e.Status).HasColumnName("status");
-            entity.Property(e => e.X).HasColumnName("x");
-            entity.Property(e => e.Y).HasColumnName("y");
 
             entity.HasOne(d => d.IdairportNavigation).WithMany(p => p.Planes)
                 .HasForeignKey(d => d.Idairport)

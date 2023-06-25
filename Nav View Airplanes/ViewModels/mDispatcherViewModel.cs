@@ -52,7 +52,6 @@ namespace Nav_View_Airplanes.ViewModels
             Flights = context;
             if (Departuries.Count == 0)
             {
-
                 foreach (var air in air_context)
                 {
                     Departuries.Add(air.City);
@@ -63,10 +62,24 @@ namespace Nav_View_Airplanes.ViewModels
                 {
                     Planes.Add(plane.Model);
                     PlanesDb.Add(plane);
+
                 }
             }
         }
-
+        public DelegateCommand SelectDepart => new(() =>
+        {
+            if (SelectedDeparture != null)
+            {
+                Planes = new List<string>();
+                foreach(var plane in PlanesDb)
+                {
+                    if (plane.IdairportNavigation.City.Equals(SelectedDeparture))
+                    {
+                        Planes.Add(plane.Model);
+                    }
+                }
+            }
+        });
         public DelegateCommand AddFlight => new(() =>
         {
             ButtonsVisible = Visibility.Collapsed;

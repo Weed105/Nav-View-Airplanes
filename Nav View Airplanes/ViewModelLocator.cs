@@ -23,6 +23,7 @@ namespace Nav_View_Airplanes
             services.AddTransient<mMainPageViewModel>();
             services.AddTransient<mDispatcherViewModel>();
             services.AddTransient<mPersonViewModel>();
+            services.AddTransient<mPlaneViewModel>();
 
             services.AddSingleton<PageService>();
             services.AddSingleton<UserService>();
@@ -40,5 +41,6 @@ namespace Nav_View_Airplanes
         public mMainPageViewModel mMainPageViewModel => provider.GetRequiredService<mMainPageViewModel>();
         public mDispatcherViewModel mDispatcherViewModel => provider.GetRequiredService<mDispatcherViewModel>();
         public mPersonViewModel mPersonViewModel => provider.GetRequiredService<mPersonViewModel>();
+        public mPlaneViewModel mPlaneViewModel => provider.GetRequiredService<mPlaneViewModel>();
     }
 }

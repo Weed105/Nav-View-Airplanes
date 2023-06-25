@@ -4,11 +4,86 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Nav_View_Airplanes.Views"
+      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="450" d:DesignWidth="800" Background="#aad3df"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      DataContext="{Binding mPlaneViewModel, Source={StaticResource ViewModelLocator}}"
       Title="PlanePage">
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Label VerticalAlignment="Center" Margin="10, 0,0,0">Nav View Airplanes</Label>
+        <Label VerticalAlignment="Center" HorizontalAlignment="Center">Панель самолетов</Label>
+        <Button Command="{Binding Back}" Style="{StaticResource ButtonToText}" HorizontalAlignment="Right" Content="Назад"/>
+        <ListView
+            Grid.Row="1"
+            Width="400"
+            ItemsSource="{Binding Planes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            BorderBrush="#152b90"
+            BorderThickness="2"
+            HorizontalContentAlignment="Stretch"
+            SelectedItem="{Binding SelectedPlane}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding SelectPlane}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border 
+                        BorderBrush="#152b90"
+                            BorderThickness="3"
+                            CornerRadius="5">
+                        <materialDesign:Card
+                            Padding="8"
+                            HorizontalAlignment="Stretch"                  
+                            Background="#1e55c7"
+                            Foreground="#f1e2b9"
+                            BorderThickness="1">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock FontWeight="Bold" Text="Модель самолета"/>
+                                <TextBlock Text="{Binding Model}"/>
+                                <TextBlock FontWeight="Bold" Text="Город отбытия"/>
+                                <TextBlock Text="{Binding IdairportNavigation.City}"/>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <StackPanel Grid.Row="2">
+            <TextBox
+                Width="250"
+                Margin="0"
+                Text="{Binding NameModel}"
+                Style="{StaticResource pwsTextBox}"
+                materialDesign:HintAssist.Hint="Модель самолета"
+                />
+            <ComboBox                
+                Width="250"
+                Margin="5"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource pwsComboBox}"
+                ItemsSource="{Binding Departuries}"
+                SelectedItem="{Binding SelectedDeparture}"
+                materialDesign:HintAssist.Hint="Город отбытия"
+                />
+            <WrapPanel HorizontalAlignment="Center">
+                <Button Command="{Binding AddPlane}" Margin="10" Cursor="Hand">Добавить</Button>
+                <Button Command="{Binding ChangePlane}" Margin="10">Изменить</Button>
+            </WrapPanel>
+            <Button Command="{Binding DeletePlane}" Margin="0 0 0 10" Width="100">Удалить</Button>
+        </StackPanel>
     </Grid>
 </Page>
