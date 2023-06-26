@@ -21,18 +21,14 @@ namespace Nav_View_Airplanes.ViewModels
 {
     public class mMainPageViewModel : BindableBase
     {
-
         public string Login { get; set; }
         public string Password { get; set; }
         public string TextButton { get; set; } = "Войти";
         public string ErrorMessageButton { get; set; }
-
         private readonly PageService _pageService;
         private readonly UserService _userService;
         private readonly GetService _getService;
-
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
-
         public GMapControl gMapControl { get; set; }
         public GMapMarker Marker { get; set; }
         public List<Airport> Airports { get; set; }
@@ -85,19 +81,6 @@ namespace Nav_View_Airplanes.ViewModels
                 Password = "";
                 AdminVisibility = Visibility.Visible;
             }
-
-            List<PointLatLng> points = new List<PointLatLng>();
-            points.Add(new PointLatLng(-25.969562, 32.585789));
-            points.Add(new PointLatLng(-25.966205, 32.588171));
-            GMapPolygon polygon = new GMapPolygon(points);
-            polygon.Shape = new Line()
-            {
-                Fill = Brushes.Red,
-                Width = 2,
-                Height = 2,
-            };
-            gMapControl.Markers.Add(polygon);
-
             LoadAirports();
             LoadFlights();
         }
@@ -119,7 +102,13 @@ namespace Nav_View_Airplanes.ViewModels
                         Width = 10,
                         Height = 10,
                         Fill = Brushes.OrangeRed,
+                        ToolTip = Airports[i].City,
                         RenderTransform = new RotateTransform(45),
+                    };
+
+                    gMapControl.OnSelectionChange += (sender, e) =>
+                    {
+                        MessageBox.Show(sender.Lng.ToString());
                     };
                     gMapControl.Markers.Add(marker);
                 }
@@ -127,25 +116,25 @@ namespace Nav_View_Airplanes.ViewModels
         }
         public async void LoadFlights()
         {
-                var flightsDb = await _getService.GetFlights();
-                Flights = flightsDb;
-                for (int i = 0; i< Flights.Count; i++)
+            var flightsDb = await _getService.GetFlights();
+            Flights = flightsDb;
+            for (int i = 0; i< Flights.Count; i++)
+            {
+                if (DateTime.Now > Flights[i].DepartureTime && DateTime.Now < Flights[i].ArrivalTime)
                 {
-                        if (DateTime.Now > Flights[i].DepartureTime && DateTime.Now < Flights[i].ArrivalTime)
-                        {
-                            double steps = (Flights[i].ArrivalTime - Flights[i].DepartureTime).TotalSeconds;
-                            double step = (DateTime.Now - Flights[i].DepartureTime).TotalSeconds;
+                    double steps = (Flights[i].ArrivalTime - Flights[i].DepartureTime).TotalSeconds;
+                    double step = (DateTime.Now - Flights[i].DepartureTime).TotalSeconds;
 
-                            double step1 = (Flights[i].ArrivalAirportNavigation.X - Flights[i].DepartureAirportNavigation.X) / steps;
-                            double step2 = (Flights[i].ArrivalAirportNavigation.Y - Flights[i].DepartureAirportNavigation.Y) / steps;
+                    double step1 = (Flights[i].ArrivalAirportNavigation.X - Flights[i].DepartureAirportNavigation.X) / steps;
+                    double step2 = (Flights[i].ArrivalAirportNavigation.Y - Flights[i].DepartureAirportNavigation.Y) / steps;
 
-                            double lat = Flights[i].DepartureAirportNavigation.X + (step1 * step);
-                            double lng = Flights[i].DepartureAirportNavigation.Y + (step2 * step);
-                            AddPlane2(lat, lng, step1, step2, steps, Flights[i]);
+                    double lat = Flights[i].DepartureAirportNavigation.X + (step1 * step);
+                    double lng = Flights[i].DepartureAirportNavigation.Y + (step2 * step);
+                    AddPlane2(lat, lng, step1, step2, steps, Flights[i]);
                     Flights[i].Status = 2;
                     _getService.ChangeState(Flights[i]);
-                        }
-                        if (DateTime.Now < Flights[i].DepartureTime)
+                }
+                if (DateTime.Now < Flights[i].DepartureTime)
                 {
                     Flights[i].Status = 3;
                     _getService.ChangeState(Flights[i]);
@@ -157,14 +146,12 @@ namespace Nav_View_Airplanes.ViewModels
                 }
             }
         }
-
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             for (int i = 0; i < Vehicles.Count; i++)
             {
                 if (DateTime.Now <= Vehicles[i].Item5.ArrivalTime)
-                {
-                    
+                {                    
                     Vehicles[i].Item1.Position = new PointLatLng(Vehicles[i].Item1.Position.Lat + Vehicles[i].Item2, Vehicles[i].Item1.Position.Lng + Vehicles[i].Item3);
                 }
                 else
@@ -174,16 +161,20 @@ namespace Nav_View_Airplanes.ViewModels
                 }
             }
         }
-
         private void AddPlane2(double lat, double lng, double step1, double step2, double steps, Flight flight)
         {
             GMapMarker marker = new GMapMarker(new PointLatLng(lat, lng));
             double rad = Math.Atan((flight.ArrivalAirportNavigation.Y - flight.DepartureAirportNavigation.Y) / (flight.ArrivalAirportNavigation.X - flight.DepartureAirportNavigation.X)) * (180 / Math.PI);
+            if (flight.ArrivalAirportNavigation.Y - flight.DepartureAirportNavigation.Y  < 0 || flight.ArrivalAirportNavigation.X - flight.DepartureAirportNavigation.X < 0)
+            {
+                rad = Math.Abs(rad);
+            }
             marker.Shape = new Image()
             {
                 Source = new BitmapImage(new Uri("../../../Resources/plane.png", UriKind.Relative)),
                 Width = 22,
                 Height = 22,
+                ToolTip = $"Самолет:\n    {flight.IdplaneNavigation.Model}\nОтбытие:\n    {flight.DepartureAirportNavigation.City}\n    {flight.DepartureTime.ToString("g")}\nПрибытие:\n    {flight.ArrivalAirportNavigation.City}\n    {flight.ArrivalTime.ToString("g")}",
                 RenderTransform = new RotateTransform(rad),
             };
             gMapControl.Markers.Add(marker);
@@ -201,6 +192,7 @@ namespace Nav_View_Airplanes.ViewModels
                 TextButton = "Войти";
             }
         });
+        public DelegateCommand ListlFlights => new(() => _pageService.ChangePage(new FlightsPage()));
         public DelegateCommand SignInFlight => new(() => _pageService.ChangePage(new DispatcherPage()));
         public DelegateCommand SignInDisp => new(() => _pageService.ChangePage(new PersonPage()));
         public DelegateCommand SignInPlane => new(() => _pageService.ChangePage(new PlanePage()));
@@ -225,12 +217,6 @@ namespace Nav_View_Airplanes.ViewModels
                         ErrorMessageButton = "Неверный логин или пароль";
                     }
                 });
-
         });
-
     }
 }
-// Гениальные мысли
-// 15.06 Было добвалено изменение положения самолета за 10 секунд от А до Б
-// * Если будет задаваться время отбытия и прибития то можно будет брать их разницу и использовать как точки карте (гениально!)
-// * Не забудь исправить бд для правильного использования 

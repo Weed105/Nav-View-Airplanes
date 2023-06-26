@@ -10,22 +10,22 @@
       mc:Ignorable="d" 
       DataContext="{Binding mMainPageViewModel, Source={StaticResource ViewModelLocator}}"
       d:DesignHeight="450" d:DesignWidth="800" Background="#aad3df"
-      
       Title="MainPage">
-
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-
         <Grid Panel.ZIndex="1">
             <Grid.Background>
                 <SolidColorBrush Color="#FF1E55C7" Opacity="0.2"/>
             </Grid.Background>
             <Label VerticalAlignment="Center" Margin="10, 0,0,0">Nav View Airplanes</Label>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-
+                <Button 
+                    Style="{StaticResource ButtonToText}" 
+                    Command="{Binding ListlFlights}"
+                    Content="Список рейсов"/>
                 <Button 
                     Style="{StaticResource ButtonToText}" 
                     Command="{Binding SignInFlight}"
@@ -74,6 +74,6 @@
                 <Button Command="{Binding SignInCommand}">Войти</Button>
             </StackPanel>
         </Border>
-        <UserControl Grid.Row="1" Content="{Binding gMapControl}" />
+        <UserControl Grid.Row="1" Content="{Binding gMapControl}"/>
     </Grid>
 </Page>
